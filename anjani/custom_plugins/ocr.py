@@ -3,9 +3,6 @@ from typing import Optional
 from aiopath import AsyncPath
 
 from pyrogram.types import (
-    CallbackQuery,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
     Message,
 )
 
