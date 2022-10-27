@@ -324,6 +324,7 @@ miscs-help: |
   **Perintah:**
   ×  /id : Menampilkan ID pengguna, ID pesan, ID grup dan banyak lagi.
   ×  /info: Menampilkan informasi tentang seorang pengguna.
+  ×  /ocr: Manampilkan teks dari sebuah gambar.
   ×  /ping : Menampilkan latensi bot.
   ×  /paste <flags> : Menyalin dan menempel file teks ke layanan pastebin.
       flags:

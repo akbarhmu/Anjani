@@ -304,6 +304,7 @@ miscs-help: |
   **Commands:**
   ×  /id : Get user id, message id, chat id and many more.
   ×  /info: Get information about a user.
+  ×  /ocr: Get text information from a image.
   ×  /ping : Get bot latency.
   ×  /paste <flags> : paste text file to a pastebin service.
       flags:
