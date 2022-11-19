@@ -93,6 +93,7 @@ class SpamPrediction(plugin.Plugin):
     user_db: util.db.AsyncCollection
     setting_db: util.db.AsyncCollection
     model: Pipeline
+    __min_reputation: int = 300
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection("SPAM_DUMP")
@@ -410,7 +411,10 @@ class SpamPrediction(plugin.Plugin):
             return
 
         # Always check the spam probability
-        return await self.spam_check(message, text)
+        try:
+            await self.spam_check(message, text)
+        except StopPropagation:
+            raise
 
     async def spam_check(self, message: Message, text: str, *, from_ocr: bool = False) -> None:
         text = text.strip()
@@ -718,8 +722,13 @@ class SpamPrediction(plugin.Plugin):
         if not user:
             return None
 
-        if user["reputation"] < 100:
-            return await self.text(chat.id, "spampredict-unauthorized", user["reputation"])
+        if user.get("reputation", 0) < self.__min_reputation:
+            return await self.text(
+                chat.id,
+                "spampredict-unauthorized",
+                user.get("reputation", 0),
+                self.__min_reputation,
+            )
 
         replied = ctx.msg.reply_to_message
         if not replied:

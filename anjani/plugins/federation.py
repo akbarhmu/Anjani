@@ -31,7 +31,13 @@ from uuid import uuid4
 from aiopath import AsyncPath
 from pyrogram.enums.chat_member_status import ChatMemberStatus
 from pyrogram.enums.chat_type import ChatType
-from pyrogram.errors import BadRequest, ChatAdminRequired, Forbidden, PeerIdInvalid
+from pyrogram.errors import (
+    BadRequest,
+    ChannelPrivate,
+    ChatAdminRequired,
+    Forbidden,
+    PeerIdInvalid,
+)
 from pyrogram.types import (
     CallbackQuery,
     Chat,
@@ -722,14 +728,14 @@ class Federation(plugin.Plugin):
         else:
             return await self.text(chat.id, "err-peer-invalid")
 
-        failed: Dict[int, str] = {}
+        failed: Dict[int, Optional[str]] = {}
         for chat in data["chats"]:
             try:
                 await self.bot.client.ban_chat_member(chat, target.id)
             except BadRequest as br:
                 self.log.warning(f"Failed to fban {target.username} on {chat} due to {br.MESSAGE}")
                 failed[chat] = br.MESSAGE
-            except Forbidden as err:
+            except (Forbidden, ChannelPrivate) as err:
                 self.log.warning(
                     f"Can't to fban {target.username} on {chat} caused by {err.MESSAGE}"
                 )
@@ -756,7 +762,7 @@ class Federation(plugin.Plugin):
                         self.log.warning(
                             f"Failed to send fban on subfed {subs_data['_id']} of {data['_id']} at {chat} due to {br.MESSAGE}"
                         )
-                    except Forbidden as err:
+                    except (Forbidden, ChannelPrivate) as err:
                         self.log.warning(
                             f"Can't to fban on subfed {subs_data['_id']} of {data['_id']} at {chat} caused by {err.MESSAGE}"
                         )
@@ -827,7 +833,7 @@ class Federation(plugin.Plugin):
         for chat in data["chats"]:
             try:
                 await self.bot.client.unban_chat_member(chat, target.id)
-            except (BadRequest, Forbidden) as err:
+            except (BadRequest, Forbidden, ChannelPrivate) as err:
                 self.log.warning(f"Failed to unfban on {data['_id']} due to {err.MESSAGE}")
 
         if data.get("subscribers", []):
@@ -838,7 +844,7 @@ class Federation(plugin.Plugin):
                 for chat in subs_data.get("chats", []):
                     try:
                         await self.bot.client.unban_chat_member(chat, target.id)
-                    except (BadRequest, Forbidden) as err:
+                    except (BadRequest, Forbidden, ChannelPrivate) as err:
                         self.log.warning(
                             f"Failed to unfban on subfed {subs_data['_id']} of {data['_id']} due to {err.MESSAGE}"
                         )
@@ -885,47 +891,38 @@ class Federation(plugin.Plugin):
                         res["reason"],
                         res["time"].strftime("%Y %b %d %H:%M UTC"),
                     )
-
                 return await self.text(chat.id, "fed-stat-not-banned")
-
             return await self.text(chat.id, "fed-not-found")
 
-        reply_msg = ctx.msg.reply_to_message
+        user = None
+        user_id = None
         if len(ctx.args) == 1:  # <user_id>
             try:
                 user_id = int(ctx.args[0])
+                user = await self.bot.client.get_users(user_id)
+                if isinstance(user, List):
+                    user = user[0]
+                if not user:
+                    return await self.text(chat.id, "fed-invalid-user-id")
             except TypeError:
                 return await self.text(chat.id, "fed-invalid-user-id")
 
-            cursor = await self.check_fban(user_id)
-            if not cursor:
-                return await self.text(chat.id, "fed-stat-multi-not-banned")
-
-            text = await self.text(chat.id, "fed-stat-multi")
-            async for bans in cursor:
-                text += "\n" + await self.text(
-                    chat.id,
-                    "fed-stat-multi-info",
-                    bans["name"],
-                    bans["_id"],
-                    bans["banned_chat" if bans.get("banned_chat") else "banned"][str(user_id)][
-                        "reason"
-                    ],
-                )
-            return text
-
-        if reply_msg:
-            user = reply_msg.from_user or reply_msg.sender_chat
-        else:
-            user = ctx.msg.from_user
+        reply_msg = ctx.msg.reply_to_message
+        if not user_id:
+            if reply_msg:
+                user = reply_msg.from_user or reply_msg.sender_chat
+            else:
+                user = ctx.msg.from_user
+            user_id = user.id
 
         if not user:
             return ""
 
-        cursor = await self.check_fban(user.id)
-        if cursor:
+        cursor = await self.check_fban(user_id)
+        fed_list = await cursor.to_list()
+        if fed_list:
             text = await self.text(chat.id, "fed-stat-multi")
-            async for bans in cursor:
+            for bans in fed_list:
                 text += "\n" + await self.text(
                     chat.id,
                     "fed-stat-multi-info",

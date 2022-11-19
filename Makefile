@@ -39,9 +39,9 @@ up-nc: build-nc stop run
 bump:
 	@echo "Updating version"
 	@echo "Current version: v$(VERSION)"
-	@read -p "New version: v" NEW_VERSION
-
+	NEW_VERSION=$(shell convco version --bump)
 	@echo "Bumping version to v$$NEW_VERSION"
+
 	sed -i "s/version = \"$(VERSION)\"/version = \"$$NEW_VERSION\"/g" pyproject.toml > /dev/null; \
 	sed -i "s/__version__ = \"$(VERSION)\"/__version__ = \"$$NEW_VERSION\"/g" anjani/__init__.py > /dev/null; \
 	git add pyproject.toml anjani/__init__.py > /dev/null
@@ -53,3 +53,20 @@ bump:
 	git checkout master
 	git merge staging
 	git push --atomic origin master staging "v$$NEW_VERSION"
+
+	@echo "Generating changelog"
+	convco changelog -m 1 > CHANGELOG.md
+	@echo -e "\n### Version Contributor(s)\n" >> CHANGELOG.md
+	@echo $(shell git log --pretty=oneline HEAD...v$(VERSION) --format="@%cN" | sort | uniq | sed s/"@GitHub"// | tr '\n' ' ') >> CHANGELOG.md
+	@echo "Changelog saved to CHANGELOG.md"
+
+changelog:
+	# https://convco.github.io/
+	@echo "Generating changelog"
+	convco changelog -m 1 > CHANGELOG.md
+	@echo -e "\n### Version Contributor(s)\n" >> CHANGELOG.md
+	@echo $(shell git log --pretty=oneline HEAD...v$(VERSION) --format="@%cN" | sort | uniq | sed s/"@GitHub"// | tr '\n' ' ') >> CHANGELOG.md
+	@echo "Changelog saved to CHANGELOG.md"
+
+requirements:
+	poetry export -E all -f requirements.txt -o requirements.txt --without-hashes
