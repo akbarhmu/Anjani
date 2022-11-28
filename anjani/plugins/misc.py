@@ -20,6 +20,8 @@ from typing import Any, ClassVar, Optional
 from aiohttp import ClientConnectorError, ClientSession, ContentTypeError
 from aiopath import AsyncPath
 
+from googletrans import Translator
+
 from anjani import command, filters, plugin, util
 
 from pyrogram.types import (
@@ -196,6 +198,33 @@ class Misc(plugin.Plugin):
             return self.log.warning("tesseract returned code '%s', %s", exitCode, stdout)
 
         return stdout
+
+    async def cmd_fixtypo(self, ctx: command.Context) -> None:
+        reply_msg = ctx.msg.reply_to_message
+
+        if reply_msg:
+            content = reply_msg.text or reply_msg.caption
+
+        if reply_msg:
+            lang = ctx.input or 'en'
+
+            translator = Translator()
+            translated = translator.translate(reply_msg.text, dest=lang, src=lang).text
+            if translated:
+                try:
+                    await self.bot.client.send_message(
+                        chat_id=ctx.chat.id,
+                        text=translated,
+                        reply_to_message_id=reply_msg.id)
+                except Exception as e:  # skipcq: PYL-W0703
+                    self.log.error("Spell check failed ", exc_info=e)
+
+                # Return early if content is empty, so error message not shown
+                if not content:
+                    return None
+
+        if not content:
+            return None
 
     async def cmd_ocr(self, ctx: command.Context) -> None:
         reply_msg = ctx.msg.reply_to_message
