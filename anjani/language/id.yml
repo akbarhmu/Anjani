@@ -323,6 +323,7 @@ miscs-button: Lainnya
 miscs-help: |
   Berisi perintah kecil dan sederhana yang mungkin tidak cocok di mana pun.\n
   **Perintah:**
+  ×  /fixtypo : Memperbaiki kesalahan ejaan dalam sebuah teks.
   ×  /id : Menampilkan ID pengguna, ID pesan, ID grup dan banyak lagi.
   ×  /info: Menampilkan informasi tentang seorang pengguna.
   ×  /ocr: Manampilkan teks dari sebuah gambar.

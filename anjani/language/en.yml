@@ -303,6 +303,7 @@ miscs-button: Misc
 miscs-help: |
   An "odds and ends" plugin for small, simple commands which don't really fit anywhere.\n
   **Commands:**
+  ×  /fixtypo : Correct spelling mistakes in a text.
   ×  /id : Get user id, message id, chat id and many more.
   ×  /info: Get information about a user.
   ×  /ocr: Get text information from a image.
