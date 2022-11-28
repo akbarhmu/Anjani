@@ -305,7 +305,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "googletrans"
-version = "3.1.0a0"
+version = "4.0.0rc1"
 description = "Free Google Translate API for Python. Translates totally free of charge."
 category = "main"
 optional = false
@@ -803,7 +803,7 @@ uvloop = ["uvloop"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9, <=3.11"
-content-hash = "2424ba4a9934703fd611e3f4c331c85fbe7401a8079133813031bef45b9db33c"
+content-hash = "f5e2ea5de8d7a7a21460dd030fe5f6145b6b3fa831267c9c86517a2989a02312"
 
 [metadata.files]
 aiofile = [
@@ -1095,7 +1095,7 @@ frozenlist = [
     {file = "frozenlist-1.3.3.tar.gz", hash = "sha256:58bcc55721e8a90b88332d6cd441261ebb22342e238296bb330968952fbb3a6a"},
 ]
 googletrans = [
-    {file = "googletrans-3.1.0a0.tar.gz", hash = "sha256:d20373a7975791318a7e5d6c6e3205012d7a990b8fabbfc6b0c16017a6dfae04"},
+    {file = "googletrans-4.0.0rc1.tar.gz", hash = "sha256:74df47b092e2d566522019d149e3f1d75732570ad76eaf8e14aebeffc126c372"},
 ]
 h11 = [
     {file = "h11-0.9.0-py2.py3-none-any.whl", hash = "sha256:4bc6d6a1238b7615b266ada57e0618568066f57dd6fa967d1290ec9309b2f2f1"},
